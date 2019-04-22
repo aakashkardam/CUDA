@@ -30,7 +30,7 @@ void randomizeBodies(float *data, int n) {
  * on all others, but does not update their positions.
  */
 
-//__global__
+__global__
 void bodyForce(Body *p, float dt, int n) {
   for (int i = 0; i < n; ++i) {
     float Fx = 0.0f; float Fy = 0.0f; float Fz = 0.0f;
@@ -86,11 +86,22 @@ int main(const int argc, const char** argv) {
 
   double totalTime = 0.0;
 
+  cudaDeviceProp props;
+  int deviceId; cudaGetDevice(&deviceId);
+  cudaGetDeviceProperties(&props, deviceId);
+  int computeCapabilityMajor = props.major;
+  int computeCapabilityMinor = props.minor;
+  int multiProcessorCount = props.multiProcessorCount;
+  int warpSize = props.warpSize;
+
+  printf("Device ID: %d\nNumber of SMs: %d\nCompute Capability Major: %d\nCompute Capability Minor: %d\nWarp Size: %d\n", deviceId, multiProcessorCount, computeCapabilityMajor, computeCapabilityMinor, warpSize);
   /*
    * This simulation will run for 10 cycles of time, calculating gravitational
    * interaction amongst bodies, and adjusting their positions to reflect.
    */
-
+ 
+  int nthreads = 32;
+  int nblock = (nBodies + nthreads -1)/nthreads;
   /*******************************************************************/
   // Do not modify these 2 lines of code.
   for (int iter = 0; iter < nIters; iter++) {
@@ -103,8 +114,9 @@ int main(const int argc, const char** argv) {
    * as well as the work to integrate the positions.
    */
 
-    bodyForce(p, dt, nBodies); // compute interbody forces
+    //bodyForce(p, dt, nBodies); // compute interbody forces
 
+    bodyForce<<<nblock,nthreads>>>(p,dt,nBodies);
   /*
    * This position integration cannot occur until this round of `bodyForce` has completed.
    * Also, the next round of `bodyForce` cannot begin until the integration is complete.
@@ -125,6 +137,7 @@ int main(const int argc, const char** argv) {
     totalTime += tElapsed.count();
   }
 
+  cudaDeviceSynchronize();
   double avgTime = totalTime / (double)(nIters);
   float billionsOfOpsPerSecond = 1e-9 * nBodies * nBodies / avgTime;
 
