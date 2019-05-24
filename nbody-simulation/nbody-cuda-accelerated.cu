@@ -15,12 +15,7 @@
 
 typedef struct { float x, y, z, vx, vy, vz; } Body;
 
-/*
- * Do not modify this function. A constraint of this exercise is
- * that it remain a host function.
- */
-
-void randomizeBodies(float *data, int n) {
+void randomizeBodies(float *data, int n) { // this should remain a host function
   for (int i = 0; i < n; i++) {
     data[i] = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
   }
@@ -64,10 +59,6 @@ void bodyForce(Body *p, float dt, int n) {
 
 int main(const int argc, const char** argv) {
 
-  /*
-   * Do not change the value for `nBodies` here. If you would like to modify it,
-   * pass values into the command line.
-   */
 
   int nBodies = 2<<11;
   int salt = 0;
@@ -101,9 +92,6 @@ int main(const int argc, const char** argv) {
 
   Body *p = (Body*)buf;
 
-  /*
-   * As a constraint of this exercise, `randomizeBodies` must remain a host function.
-   */
 
   randomizeBodies(buf, 6 * nBodies); // Init pos / vel data
 
@@ -117,20 +105,10 @@ int main(const int argc, const char** argv) {
    */
  
   /*******************************************************************/
-  // Do not modify these 2 lines of code.
   for (int iter = 0; iter < nIters; iter++) {
-    //StartTimer();
  auto start=std::chrono::high_resolution_clock::now();	  
-  /*******************************************************************/
-
-  /*
-   * You will likely wish to refactor the work being done in `bodyForce`,
-   * as well as the work to integrate the positions.
-   */
-
-    //bodyForce(p, dt, nBodies); // compute interbody forces
-
-    bodyForce<<<nblock,nthreads>>>(p,dt,nBodies);
+    
+ bodyForce<<<nblock,nthreads>>>(p,dt,nBodies);
   /*
    * This position integration cannot occur until this round of `bodyForce` has completed.
    * Also, the next round of `bodyForce` cannot begin until the integration is complete.
@@ -144,7 +122,6 @@ int main(const int argc, const char** argv) {
     }
 
   /*******************************************************************/
-  // Do not modify the code in this section.
     //const double tElapsed = GetTimer() / 1000.0;
     //totalTime += tElapsed;
     auto finish = std::chrono::high_resolution_clock::now();
@@ -165,9 +142,6 @@ int main(const int argc, const char** argv) {
 #endif
   /*******************************************************************/
 
-  /*
-   * Feel free to modify code below.
-   */
 
   //free(buf);
   cudaFree(buf);
