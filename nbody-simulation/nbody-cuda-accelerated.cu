@@ -32,16 +32,19 @@ void randomizeBodies(float *data, int n) {
 
 __global__
 void bodyForce(Body *p, float dt, int n) {
-  for (int i = 0; i < n; ++i) {
+  int i = blockDim.x * blockIdx.x + threadIdx.x;
+  if(i<n) {
     float Fx = 0.0f; float Fy = 0.0f; float Fz = 0.0f;
+    for(int tl = 0; tl <gridDim.x; tl++){
+      __shared__ float3 position_in_shared_mem[nthreads]; // usign shared memory on gpu
+      float position_in_x = p[tl * blockDim.x + threadIdx.x].x;
+      float position_in_y = p[tl * blockDim.x + threadIdx.x].y;
+      float position_in_z = p[tl * blockDim.x + threadIdx.x].z;
+      position_in_shared_mem[threadIdx.x] = make_float3(position_in_x, position_in_y, position_in_z);
+      __syncthreads();      
+	}
+	}
 
-    for (int j = 0; j < n; j++) {
-      float dx = p[j].x - p[i].x;
-      float dy = p[j].y - p[i].y;
-      float dz = p[j].z - p[i].z;
-      float distSqr = dx*dx + dy*dy + dz*dz + SOFTENING;
-      float invDist = rsqrtf(distSqr);
-      float invDist3 = invDist * invDist * invDist;
 
       Fx += dx * invDist3; Fy += dy * invDist3; Fz += dz * invDist3;
     }
