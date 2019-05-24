@@ -5,6 +5,7 @@
 //include "check.h"
 #include <chrono>
 
+#define nthreads 32
 #define SOFTENING 1e-9f
 
 /*
@@ -33,23 +34,31 @@ void randomizeBodies(float *data, int n) {
 __global__
 void bodyForce(Body *p, float dt, int n) {
   int i = blockDim.x * blockIdx.x + threadIdx.x;
-  if(i<n) {
+  if(i<n) 
+  {
     float Fx = 0.0f; float Fy = 0.0f; float Fz = 0.0f;
-    for(int tl = 0; tl <gridDim.x; tl++){
+    for(int tl = 0; tl <gridDim.x; tl++)
+    {
       __shared__ float3 position_in_shared_mem[nthreads]; // usign shared memory on gpu
       float position_in_x = p[tl * blockDim.x + threadIdx.x].x;
       float position_in_y = p[tl * blockDim.x + threadIdx.x].y;
       float position_in_z = p[tl * blockDim.x + threadIdx.x].z;
       position_in_shared_mem[threadIdx.x] = make_float3(position_in_x, position_in_y, position_in_z);
-      __syncthreads();      
-	}
-	}
+      __syncthreads();
+      for(int j=0; j<nthreads; j++)
+      {
+        float dx = position_in_shared_mem[j].x - p[i].x;
+	float dy = position_in_shared_mem[j].y - p[i].y;
+	float dz = position_in_shared_mem[j].z - p[i].z;
+	float distSqr = dx*dx + dy*dy + dz*dz + SOFTENING;
+        float invDist = rsqrtf(distSqr);
+        float invDist3 = invDist * invDist * invDist;
 
-
-      Fx += dx * invDist3; Fy += dy * invDist3; Fz += dz * invDist3;
-    }
-
-    p[i].vx += dt*Fx; p[i].vy += dt*Fy; p[i].vz += dt*Fz;
+	Fx += dx * invDist3; Fy += dy * invDist3; Fz += dz * invDist3;
+      }
+      __syncthreads();
+     }
+     p[i].vx += dt*Fx; p[i].vy += dt*Fy; p[i].vz += dt*Fz;
   }
 }
 
@@ -103,7 +112,6 @@ int main(const int argc, const char** argv) {
    * interaction amongst bodies, and adjusting their positions to reflect.
    */
  
-  int nthreads = 32;
   int nblock = (nBodies + nthreads -1)/nthreads;
   /*******************************************************************/
   // Do not modify these 2 lines of code.
