@@ -82,11 +82,22 @@ int main(const int argc, const char** argv) {
   const float dt = 0.01f; // time step
   const int nIters = 10;  // simulation iterations
 
+  int nblock = (nBodies + nthreads - 1)/nthreads;
+
+  cudaDeviceProp props;
+  int deviceId;
+  cudaGetDevice(&deviceId); 
+  cudaGetDeviceProperties(&props, deviceId);
+  int computeCapabilityMajor = props.major;
+  int computeCapabilityMinor = props.minor;
+  int multiProcessorCount = props.multiProcessorCount;
+  int warpSize = props.warpSize;
   int bytes = nBodies * sizeof(Body);
   float *buf;
 
   //buf = (float *)malloc(bytes);
   cudaMallocManaged(&buf,bytes);
+  cudaMemPrefetchAsync(buf,bytes,deviceId);
 
   Body *p = (Body*)buf;
 
@@ -98,13 +109,6 @@ int main(const int argc, const char** argv) {
 
   double totalTime = 0.0;
 
-  cudaDeviceProp props;
-  int deviceId; cudaGetDevice(&deviceId);
-  cudaGetDeviceProperties(&props, deviceId);
-  int computeCapabilityMajor = props.major;
-  int computeCapabilityMinor = props.minor;
-  int multiProcessorCount = props.multiProcessorCount;
-  int warpSize = props.warpSize;
 
   printf("Device ID: %d\nNumber of SMs: %d\nCompute Capability Major: %d\nCompute Capability Minor: %d\nWarp Size: %d\n", deviceId, multiProcessorCount, computeCapabilityMajor, computeCapabilityMinor, warpSize);
   /*
@@ -112,7 +116,6 @@ int main(const int argc, const char** argv) {
    * interaction amongst bodies, and adjusting their positions to reflect.
    */
  
-  int nblock = (nBodies + nthreads -1)/nthreads;
   /*******************************************************************/
   // Do not modify these 2 lines of code.
   for (int iter = 0; iter < nIters; iter++) {
@@ -133,6 +136,7 @@ int main(const int argc, const char** argv) {
    * Also, the next round of `bodyForce` cannot begin until the integration is complete.
    */
 
+    cudaDeviceSynchronize();
     for (int i = 0 ; i < nBodies; i++) { // integrate position
       p[i].x += p[i].vx*dt;
       p[i].y += p[i].vy*dt;
