@@ -21,7 +21,7 @@ typedef struct { float x, y, z, vx, vy, vz; } Body;
 
 void randomizeBodies(float *data, int n) {
   for (int i = 0; i < n; i++) {
-    data[i] = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
+    data[i] = 2.0f * (rand() / (float)RAND_MAX) - 1.0f; /* gives a random floating point number b/w -1.0f top 1.0f*/
   }
 }
 
