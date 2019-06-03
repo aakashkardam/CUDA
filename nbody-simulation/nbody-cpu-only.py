@@ -1,6 +1,6 @@
 import numpy as np
 import random
-import timeit
+import time
 
 SOFTENING = 1e-9
 class Body:
@@ -41,15 +41,21 @@ class Body:
             self.vy[i] += dt*Fy
             self.vz[i] += dt*Fz
 
+    def printInteractions(self):
+        for i in range(np.shape(B.x)[0]):
+            print("\t\t\t\t\t","Body ", i)
+            print("B.x = ","{0:.2}".format(self.x[i]), "B.y = ", "{0:.2}".format(self.y[i]), "B.z = ", "{0:.2}".format(self.z[i]), "B.vx = ","{0:.2}".format(self.vx[i]), "B.vy = ", "{0:.2}".format(self.vy[i]), "B.vz = ", "{0:.2}".format(self.vz[i]))
+
 
 if __name__ == "__main__":
-    nBodies = 2<<11;
+    nBodies = 3 #2<<11;
     dt = 0.01
     nIters  = 10
 
     B = Body();
     B.randomizeBodies(nBodies)
-    start=timeit.timeit()
+    start=time.time()
     B.bodyForce(dt,nBodies)
-    end=timeit.timeit()
-    print("time-elapsed = ",end-start)
+    end=time.time()
+    print("time elapsed in calculating the body forces = ",end-start)
+    B.printInteractions()
