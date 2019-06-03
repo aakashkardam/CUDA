@@ -20,15 +20,15 @@ class Body:
            self.vz.append(random.uniform(-1.0,1.0))
 
 
-    def bodyForce(p, dt, n):
+    def bodyForce(self, dt, n):
         for i in range(n):
             Fx=0.0
             Fy=0.0
             Fz=0.0
             for j in range(n):
-                dx=p[j].x - p[i].x
-                dy=p[j].y - p[i].y
-                dz=p[j].z - p[i].z
+                dx=self.x[j] - self.x[i]
+                dy=self.y[j] - self.y[i]
+                dz=self.z[j] - self.z[i]
                 distSqr = dx*dx + dy*dy + dz*dz + SOFTENING
                 invDist = np.sqrt(distSqr)
                 invDist3 = invDist**3
@@ -36,9 +36,9 @@ class Body:
                 Fx += dx*invDist3
                 Fy += dy*invDist3
                 Fz += dz*invDist3
-            p[i].vx += dt*Fx
-            p[i].vy += dt*Fy
-            p[i].vz += dt*Fz
+            self.vx[i] += dt*Fx
+            self.vy[i] += dt*Fy
+            self.vz[i] += dt*Fz
 
 
 if __name__ == "__main__":
@@ -47,4 +47,5 @@ if __name__ == "__main__":
     nIters  = 10
 
     B = Body();
-    B.randomizeBodies(nBodies) 
+    B.randomizeBodies(nBodies)
+    B.bodyForce(dt,nBodies)
