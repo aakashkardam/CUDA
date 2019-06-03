@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import timeit
 
 SOFTENING = 1e-9
 class Body:
@@ -48,4 +49,7 @@ if __name__ == "__main__":
 
     B = Body();
     B.randomizeBodies(nBodies)
+    start=timeit.timeit()
     B.bodyForce(dt,nBodies)
+    end=timeit.timeit()
+    print("time-elapsed = ",end-start)
