@@ -43,12 +43,11 @@ class Body:
 
     def printInteractions(self):
         for i in range(np.shape(B.x)[0]):
-            print("\t\t\t\t\t","Body ", i)
-            print("B.x = ","{0:.2}".format(self.x[i]), "B.y = ", "{0:.2}".format(self.y[i]), "B.z = ", "{0:.2}".format(self.z[i]), "B.vx = ","{0:.2}".format(self.vx[i]), "B.vy = ", "{0:.2}".format(self.vy[i]), "B.vz = ", "{0:.2}".format(self.vz[i]))
+            print("BDY ",i,"\tB.x = ","{0:.2}".format(self.x[i]), "\tB.y = ", "{0:.2}".format(self.y[i]), "\tB.z = ", "{0:.2}".format(self.z[i]), "\tB.vx = ","{0:.2}".format(self.vx[i]), "\tB.vy = ", "{0:.2}".format(self.vy[i]), "\tB.vz = ", "{0:.2}".format(self.vz[i]))
 
 
 if __name__ == "__main__":
-    nBodies = 3 #2<<11;
+    nBodies = 2<<11;
     dt = 0.01
     nIters  = 10
 
